@@ -16,7 +16,7 @@ if use_externals:
 
 env = excons.MakeBaseEnv()
 
-unity_ver = ARGUMENTS.get("unityver", "5.3")
+unity_ver = ARGUMENTS.get("unityver", "2018.3")
 
 # I don't know what this whole PatchLibrary is. Looks like a hack that we don't
 # really need. Let's disable it for now by defining aiMaster
@@ -30,7 +30,7 @@ customs = []
 
 shader_ver = unity_ver
 if not os.path.isdir("AlembicImporter/Assets/AlembicImporter/Shaders/%s" % shader_ver):
-  shader_ver = "5.3"
+  shader_ver = "2018.3"
 shaders = glob.glob("AlembicImporter/Assets/AlembicImporter/Shaders/%s/DataViz.shader*" % shader_ver)
 
 install_files = {"unity/AlembicImporter/Scripts": glob.glob("AlembicImporter/Assets/AlembicImporter/Scripts/*.cs*"),
