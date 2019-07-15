@@ -26,6 +26,9 @@ public class AlembicStream : MonoBehaviour
     public bool m_preserveStartTime = true;
     public CycleType m_cycle = CycleType.Hold;
 
+    [SerializeField]
+    public bool m_hasAppliedClip = true;
+    public bool m_ignorePlayTime = false;
     [Header("Data")]
     public bool m_swapHandedness = false;
     public bool m_swapFaceWinding = false;
@@ -108,7 +111,7 @@ public class AlembicStream : MonoBehaviour
         float extraOffset = 0.0f;
 
         // compute extra time offset to counter-balance effect of m_timeScale on m_startTime
-        if (m_preserveStartTime)
+        if (m_preserveStartTime && !m_hasAppliedClip)
         {
             extraOffset = m_startTime * (m_timeScale - 1.0f);
         }
@@ -379,7 +382,7 @@ public class AlembicStream : MonoBehaviour
             float abcTime = AbcTime(m_time);
             float aspectRatio = AbcAPI.GetAspectRatio(m_aspectRatioMode);
 
-            if (AbcUpdateRequired(abcTime, aspectRatio))
+            if (AbcUpdateRequired(abcTime, aspectRatio) || m_hasAppliedClip)
             {
                 if (m_verbose)
                 {
@@ -503,6 +506,19 @@ public class AlembicStream : MonoBehaviour
         }
     }
 
+    public bool checkAppliedClip()
+    {
+        //check applied Clips by animator.hasBoundPlayables
+        var animator = GetComponent<Animator>();
+        if(animator)
+        {
+            m_hasAppliedClip = animator.hasBoundPlayables;
+            
+            return m_hasAppliedClip;
+        }
+        return false;
+    }
+
     // --- method overrides ---
 
     void OnApplicationQuit()
@@ -514,6 +530,12 @@ public class AlembicStream : MonoBehaviour
     {
         AbcLoad();
         AbcAPI.aiEnableFileLog(m_logToFile, m_logPath);
+        checkAppliedClip();
+    }
+
+    void OnEnable()
+    {
+        checkAppliedClip();
     }
 
     void OnDestroy()
@@ -543,6 +565,9 @@ public class AlembicStream : MonoBehaviour
         m_time = 0.0f;
         m_forceRefresh = true;
 
+        //check applied Clips 
+        checkAppliedClip();
+
         AbcSetLastUpdateState(AbcTime(0.0f), AbcAPI.GetAspectRatio(m_aspectRatioMode));
     }
 
@@ -550,19 +575,101 @@ public class AlembicStream : MonoBehaviour
     //   precedence of alembic sampling on the actual unity mesh update that happens
     //   in AlembicElement components 'Update' method
 
+    void AbcUpdate2(float time)
+    {
+        AbcUpdate(time);
+#if UNITY_EDITOR
+            EditorUtility.SetDirty( this.gameObject );
+#endif
+    }
+
+    void AbcUpdate()
+    {
+        if(m_ignorePlayTime || (!m_hasAppliedClip && Application.isPlaying))
+        {
+                AbcUpdate2(Time.time);
+        }
+        else
+        {
+            AbcUpdate(m_time);
+        }
+
+      //  this.SendMessage( "AbcUpdate", m_time, SendMessageOptions.DontRequireReceiver );
+
+
+#if UNITY_EDITOR
+     //   EditorUtility.SetDirty( this.gameObject );
+#endif
+
+    }
+
+
+    void Update()
+    {
+        checkAppliedClip();
+
+        AbcUpdate();
+    }
+    void LateUpdate()
+    {
+        AbcUpdate();
+    }
+
+    void FixedUpdate()
+    {
+        AbcUpdate();
+    }
+
+
+    /*
+    void OnPreCull()
+    {
+//            AbcUpdate2(m_time);
+    }
+
     void Update()
     {
         if (!Application.isPlaying)
         {
-            AbcUpdate(m_time);
+           AbcUpdate2(m_time);
         }
+        m_forceRefresh = true;
+    }
+    void LateUpdate()
+    {
+        m_forceRefresh = true;
+        AbcUpdate2(m_time);
+
+        if (Application.isPlaying)
+        {
+            if (m_hasAppliedClip)
+            {
+                AbcUpdate2(m_time);
+            }
+        }else
+        {
+            AbcUpdate2(m_time);
+        }    
+
     }
 
     void FixedUpdate()
     {
         if (Application.isPlaying)
         {
-            AbcUpdate(Time.time);
+            if (!m_hasAppliedClip)
+            {
+                AbcUpdate2(Time.time);
+            }
+            else
+            {
+                AbcUpdate2(m_time);
+            }
+        }
+        else
+        {
+           AbcUpdate2(m_time);
         }
     }
+    */
 }

@@ -98,4 +98,27 @@ public class AlembicStreamSync : MonoBehaviour
          AbcUpdate(m_time);
       }
    }
+
+
+    void LateUpdate()
+    {
+      // Do not trigger stream update if we're in play mode
+      if (!Application.isPlaying)
+      {
+         AbcUpdate(m_time);
+      }
+    }
+
+    void FixedUpdate()
+    {
+
+      // Do not trigger stream update if we're in play mode
+      if (!Application.isPlaying)
+      {
+         AbcUpdate(m_time);
+      }
+
+    }
+
+
 }

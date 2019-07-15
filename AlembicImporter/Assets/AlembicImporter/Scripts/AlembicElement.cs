@@ -96,6 +96,19 @@ public abstract class AlembicElement : MonoBehaviour
         AbcUpdate();
     }
 
+
+    void LateUpdate()
+    {
+        AbcUpdate();
+
+    }
+
+    void FixedUpdate()
+    {
+        AbcUpdate();
+
+    }
+
     protected void ResetInstance()
     {
         m_instance = false;
