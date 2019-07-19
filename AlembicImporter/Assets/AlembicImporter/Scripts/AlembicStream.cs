@@ -575,30 +575,19 @@ public class AlembicStream : MonoBehaviour
     //   precedence of alembic sampling on the actual unity mesh update that happens
     //   in AlembicElement components 'Update' method
 
-    void AbcUpdate2(float time)
-    {
-        AbcUpdate(time);
-#if UNITY_EDITOR
-            EditorUtility.SetDirty( this.gameObject );
-#endif
-    }
-
     void AbcUpdate()
     {
-        if(m_ignorePlayTime || (!m_hasAppliedClip && Application.isPlaying))
+        if(!m_ignorePlayTime && !m_hasAppliedClip && Application.isPlaying)
         {
-                AbcUpdate2(Time.time);
+                AbcUpdate(Time.time);
         }
         else
         {
             AbcUpdate(m_time);
         }
 
-      //  this.SendMessage( "AbcUpdate", m_time, SendMessageOptions.DontRequireReceiver );
-
-
 #if UNITY_EDITOR
-     //   EditorUtility.SetDirty( this.gameObject );
+        EditorUtility.SetDirty( this.gameObject );
 #endif
 
     }
@@ -621,55 +610,4 @@ public class AlembicStream : MonoBehaviour
     }
 
 
-    /*
-    void OnPreCull()
-    {
-//            AbcUpdate2(m_time);
-    }
-
-    void Update()
-    {
-        if (!Application.isPlaying)
-        {
-           AbcUpdate2(m_time);
-        }
-        m_forceRefresh = true;
-    }
-    void LateUpdate()
-    {
-        m_forceRefresh = true;
-        AbcUpdate2(m_time);
-
-        if (Application.isPlaying)
-        {
-            if (m_hasAppliedClip)
-            {
-                AbcUpdate2(m_time);
-            }
-        }else
-        {
-            AbcUpdate2(m_time);
-        }    
-
-    }
-
-    void FixedUpdate()
-    {
-        if (Application.isPlaying)
-        {
-            if (!m_hasAppliedClip)
-            {
-                AbcUpdate2(Time.time);
-            }
-            else
-            {
-                AbcUpdate2(m_time);
-            }
-        }
-        else
-        {
-           AbcUpdate2(m_time);
-        }
-    }
-    */
 }
